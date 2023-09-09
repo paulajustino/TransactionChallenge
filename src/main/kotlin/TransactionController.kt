@@ -2,11 +2,11 @@ class TransactionController {
 
     private lateinit var transactions: MutableList<Transaction>
 
-    init {
+/*    init {
         createTransactions()
         for (transaction in transactions)
             processTransaction(transaction)
-    }
+    }*/
 
     private fun createTransactions(): MutableList<Transaction> {
         transactions = mutableListOf()
@@ -41,7 +41,11 @@ class TransactionController {
 
                     // atualiza saldo da conta
                     val balanceType = checkBalanceTypeUsedInTransaction(transactionMcc = mcc)
-                    AccountController().updateBalanceAccount(balance = updatedBalance, balanceType = balanceType)
+                    AccountController().updateBalanceAccount(
+                        accountId = account.id,
+                        balance = updatedBalance,
+                        balanceType = balanceType
+                    )
 
                     // registra resultado da transação no banco
                     transactionResult = TransactionResult(

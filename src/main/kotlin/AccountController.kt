@@ -64,14 +64,16 @@ class AccountController {
         return account
     }
 
-    fun updateBalanceAccount(balance: Double, balanceType: String) {
+    fun updateBalanceAccount(accountId: Int, balance: Double, balanceType: String) {
         val dbConnection = DataBaseConfig.getConnection()
 
         dbConnection?.let {
             val query = "UPDATE account SET $balanceType = ? WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
-            preparedStatement.setDouble(1, balance)
+                preparedStatement.setDouble(1, balance)
+                preparedStatement.setInt(2, accountId)
+
 
             val rowUpdated = preparedStatement.executeUpdate()
 
