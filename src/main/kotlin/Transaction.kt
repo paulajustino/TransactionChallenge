@@ -3,5 +3,5 @@ data class Transaction(
     val accountId: String,
     val amount: Double,
     val merchant: String,
-    val mcc: Int,
+    val mcc: String,
 )
