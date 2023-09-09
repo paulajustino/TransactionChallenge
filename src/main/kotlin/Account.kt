@@ -1,5 +1,5 @@
 data class Account(
-    val id: String,
+    val id: Int,
     val foodBalance: Double,
     val mealBalance: Double,
     val cashBalance: Double,

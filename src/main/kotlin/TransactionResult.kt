@@ -1,6 +1,6 @@
 data class TransactionResult(
-    val id: String,
-    val accountId: String,
+    val id: Int,
+    val accountId: Int,
     val status: String,
     val message: String,
 )
