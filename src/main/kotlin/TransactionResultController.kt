@@ -1,9 +1,7 @@
 class TransactionResultController : TransactionResultControllerInterface {
 
     override fun insertTransactionResult(transactionResult: TransactionResult) {
-        val dbConnection = DataBaseConfig.getConnection()
-
-        dbConnection?.let {
+        DataBaseConfig.getConnection()?.use { dbConnection ->
             val query =
                 "INSERT INTO transaction_result (id, accountId, amount, merchant, mcc, status, message) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
@@ -17,18 +15,15 @@ class TransactionResultController : TransactionResultControllerInterface {
             preparedStatement.setString(7, transactionResult.message)
 
             preparedStatement.executeUpdate()
-
-            preparedStatement.close()
-            dbConnection.close()
         }
     }
 
     // busca de resultados de transações por id da conta
     override fun getTransactionResultByAccountId(id: Int): List<TransactionResult?> {
-        val dbConnection = DataBaseConfig.getConnection()
         val transactionResultList: MutableList<TransactionResult?> = mutableListOf()
 
-        dbConnection?.let {
+        // metodo 'use' garante que todas as conexoes e recursos sejam fechados ao final da execução
+        DataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "SELECT * FROM transaction_result WHERE accountId = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -49,20 +44,17 @@ class TransactionResultController : TransactionResultControllerInterface {
                     )
                 )
             }
-
-            resultQuery.close()
-            preparedStatement.close()
-            dbConnection.close()
         }
+
         return transactionResultList
     }
 
     // busca de resultados de transações pelo nome do estabelecimento
     override fun getTransactionResultByMerchant(merchant: String): List<TransactionResult?> {
-        val dbConnection = DataBaseConfig.getConnection()
         val transactionResultList: MutableList<TransactionResult?> = mutableListOf()
 
-        dbConnection?.let {
+        // metodo 'use' garante que todas as conexoes e recursos sejam fechados ao final da execução
+        DataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "SELECT * FROM transaction_result WHERE merchant = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -84,10 +76,8 @@ class TransactionResultController : TransactionResultControllerInterface {
                 )
             }
 
-            resultQuery.close()
-            preparedStatement.close()
-            dbConnection.close()
         }
+
         return transactionResultList
     }
 }
