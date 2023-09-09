@@ -1,8 +1,10 @@
-class TransactionResultController : TransactionResultControllerInterface {
+class TransactionResultController(
+    private val dataBaseConfig: DataBaseConfigInterface,
+) : TransactionResultControllerInterface {
 
     // insere um resultado de transação
     override fun insertTransactionResult(transactionResult: TransactionResult) {
-        DataBaseConfig.getConnection()?.use { dbConnection ->
+        dataBaseConfig.getConnection()?.use { dbConnection ->
             val query =
                 "INSERT INTO transaction_result (id, accountId, amount, merchant, mcc, status, message) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
@@ -24,7 +26,7 @@ class TransactionResultController : TransactionResultControllerInterface {
         val transactionResultList: MutableList<TransactionResult?> = mutableListOf()
 
         // metodo 'use' garante que todas as conexoes e recursos sejam fechados ao final da execução
-        DataBaseConfig.getConnection()?.use { dbConnection ->
+        dataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "SELECT * FROM transaction_result WHERE accountId = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -55,7 +57,7 @@ class TransactionResultController : TransactionResultControllerInterface {
         val transactionResultList: MutableList<TransactionResult?> = mutableListOf()
 
         // metodo 'use' garante que todas as conexoes e recursos sejam fechados ao final da execução
-        DataBaseConfig.getConnection()?.use { dbConnection ->
+        dataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "SELECT * FROM transaction_result WHERE merchant = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)

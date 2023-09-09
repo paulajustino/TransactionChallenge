@@ -1,10 +1,6 @@
-class AccountController : AccountControllerInterface {
-
-    /*    init {
-            val accounts = createAccounts()
-            for (account in accounts)
-                insertAccount(account)
-        }*/
+class AccountController(
+    private val dataBaseConfig: DataBaseConfigInterface,
+) : AccountControllerInterface {
 
     private fun createAccounts(): MutableList<Account> {
         val accounts: MutableList<Account> = mutableListOf()
@@ -19,7 +15,7 @@ class AccountController : AccountControllerInterface {
 
     override fun insertAccount(account: Account) {
 
-        DataBaseConfig.getConnection()?.use { dbConnection ->
+        dataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "INSERT INTO account (id, foodBalance, mealBalance, cashBalance) VALUES (?, ?, ?, ?)"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -35,7 +31,7 @@ class AccountController : AccountControllerInterface {
     override fun getAccountById(accountId: Int): Account? {
         var account: Account? = null
 
-        DataBaseConfig.getConnection()?.use { dbConnection ->
+        dataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "SELECT * FROM account WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -58,13 +54,13 @@ class AccountController : AccountControllerInterface {
 
     override fun updateBalanceAccount(accountId: Int, balance: Double, balanceType: String) {
 
-        DataBaseConfig.getConnection()?.use { dbConnection ->
+        dataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "UPDATE account SET $balanceType = ? WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
             preparedStatement.setDouble(1, balance)
             preparedStatement.setInt(2, accountId)
-            
+
             val rowUpdated = preparedStatement.executeUpdate()
 
             val account = getAccountById(accountId)
