@@ -1,3 +1,3 @@
-enum class TransactionStatus {
-    APPROVED, DENIED
+enum class TransactionStatus(val status: String) {
+    APPROVED("Aprovada"), DENIED("Negada")
 }

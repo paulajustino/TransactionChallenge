@@ -54,7 +54,7 @@ class TransactionController {
                         amount = amount,
                         merchant = merchant,
                         mcc = mcc,
-                        status = TransactionStatus.APPROVED.name,
+                        status = TransactionStatus.APPROVED.status,
                         message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage,
                     )
 
@@ -66,7 +66,7 @@ class TransactionController {
                         amount = amount,
                         merchant = merchant,
                         mcc = mcc,
-                        status = TransactionStatus.DENIED.name,
+                        status = TransactionStatus.DENIED.status,
                         message = TransactionStatusMessage.INSUFFICIENT_BALANCE_MESSAGE.statusMessage,
                     )
 
@@ -80,7 +80,7 @@ class TransactionController {
                     amount = amount,
                     merchant = merchant,
                     mcc = mcc,
-                    status = TransactionStatus.DENIED.name,
+                    status = TransactionStatus.DENIED.status,
                     message = TransactionStatusMessage.INVALID_ACCOUNT_ID_MESSAGE.statusMessage,
                 )
 
