@@ -79,10 +79,13 @@ class AccountController {
 
             dbConnection.close()
 
+            val account = getAccountById(accountId)
             if (rowUpdated > 0) {
                 println("Saldo em conta atualizado com sucesso.")
+                println(account)
             } else {
                 println("Erro: Saldo em conta não atualizado.")
+                println(account)
             }
         }
     }

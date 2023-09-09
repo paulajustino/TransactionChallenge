@@ -2,11 +2,11 @@ class TransactionController {
 
     private lateinit var transactions: MutableList<Transaction>
 
-/*    init {
+    init {
         createTransactions()
         for (transaction in transactions)
             processTransaction(transaction)
-    }*/
+    }
 
     private fun createTransactions(): MutableList<Transaction> {
         transactions = mutableListOf()
