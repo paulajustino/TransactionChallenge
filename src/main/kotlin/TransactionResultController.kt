@@ -4,13 +4,16 @@ class TransactionResultController {
         val dbConnection = DataBaseConfig.getConnection()
 
         dbConnection?.let {
-            val query = "INSERT INTO transaction_result (id, accountId, status, message) VALUES (?, ?, ?, ?)"
+            val query = "INSERT INTO transaction_result (id, accountId, amount, merchant, mcc, status, message) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
             val preparedStatement = dbConnection.prepareStatement(query)
             preparedStatement.setInt(1, transactionResult.id)
             preparedStatement.setInt(2, transactionResult.accountId)
-            preparedStatement.setString(3, transactionResult.status)
-            preparedStatement.setString(4, transactionResult.message)
+            preparedStatement.setDouble(3, transactionResult.amount)
+            preparedStatement.setString(4, transactionResult.merchant)
+            preparedStatement.setString(5, transactionResult.mcc)
+            preparedStatement.setString(6, transactionResult.status)
+            preparedStatement.setString(7, transactionResult.message)
 
             preparedStatement.executeUpdate()
 
