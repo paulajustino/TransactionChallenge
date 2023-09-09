@@ -1,36 +1,15 @@
-class TransactionController {
-
-    private lateinit var transactions: MutableList<Transaction>
-
-    init {
-        createTransactions()
-        for (transaction in transactions)
-            processTransaction(transaction)
-    }
-
-    private fun createTransactions(): MutableList<Transaction> {
-        transactions = mutableListOf()
-
-        transactions.add(
-            Transaction(
-                id = 1,
-                accountId = 1,
-                amount = 20.0,
-                merchant = "Restaurante Tavares",
-                mcc = "5811"
-            )
-        )
-
-        return transactions
-    }
+class TransactionController(
+    private val accountController: AccountControllerInterface,
+    private val transactionResultController: TransactionResultControllerInterface
+) {
 
     // processa uma transação
-    private fun processTransaction(transaction: Transaction) {
+    fun processTransaction(transaction: Transaction) {
         val transactionResult: TransactionResult
 
         with(transaction) {
             // busca conta relacionada a transação
-            val account = AccountController().getAccountById(id = accountId)
+            val account = accountController.getAccountById(accountId = accountId)
 
             // verifica se conta existe
             if (account != null) {
@@ -41,7 +20,7 @@ class TransactionController {
 
                     // atualiza saldo da conta
                     val balanceType = checkBalanceTypeUsedInTransaction(transactionMcc = mcc)
-                    AccountController().updateBalanceAccount(
+                    accountController.updateBalanceAccount(
                         accountId = account.id,
                         balance = updatedBalance,
                         balanceType = balanceType
@@ -58,7 +37,7 @@ class TransactionController {
                         message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage,
                     )
 
-                    TransactionResultController().insertTransactionResult(transactionResult)
+                    transactionResultController.insertTransactionResult(transactionResult)
                 } else {
                     transactionResult = TransactionResult(
                         id = id,
@@ -70,7 +49,7 @@ class TransactionController {
                         message = TransactionStatusMessage.INSUFFICIENT_BALANCE_MESSAGE.statusMessage,
                     )
 
-                    TransactionResultController().insertTransactionResult(transactionResult)
+                    transactionResultController.insertTransactionResult(transactionResult)
                 }
 
             } else {
@@ -84,7 +63,7 @@ class TransactionController {
                     message = TransactionStatusMessage.INVALID_ACCOUNT_ID_MESSAGE.statusMessage,
                 )
 
-                TransactionResultController().insertTransactionResult(transactionResult)
+                transactionResultController.insertTransactionResult(transactionResult)
             }
         }
     }

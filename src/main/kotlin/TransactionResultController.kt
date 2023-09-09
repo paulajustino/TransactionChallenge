@@ -1,10 +1,11 @@
-class TransactionResultController {
+class TransactionResultController : TransactionResultControllerInterface {
 
-    fun insertTransactionResult(transactionResult: TransactionResult) {
+    override fun insertTransactionResult(transactionResult: TransactionResult) {
         val dbConnection = DataBaseConfig.getConnection()
 
         dbConnection?.let {
-            val query = "INSERT INTO transaction_result (id, accountId, amount, merchant, mcc, status, message) VALUES (?, ?, ?, ?, ?, ?, ?)"
+            val query =
+                "INSERT INTO transaction_result (id, accountId, amount, merchant, mcc, status, message) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
             val preparedStatement = dbConnection.prepareStatement(query)
             preparedStatement.setInt(1, transactionResult.id)
@@ -23,7 +24,7 @@ class TransactionResultController {
     }
 
     // busca de resultados de transações por id da conta
-    fun getTransactionResultByAccountId(id: Int): List<TransactionResult?> {
+    override fun getTransactionResultByAccountId(id: Int): List<TransactionResult?> {
         val dbConnection = DataBaseConfig.getConnection()
         val transactionResultList: MutableList<TransactionResult?> = mutableListOf()
 
@@ -57,7 +58,7 @@ class TransactionResultController {
     }
 
     // busca de resultados de transações pelo nome do estabelecimento
-    fun getTransactionResultByMerchant(merchant: String): List<TransactionResult?> {
+    override fun getTransactionResultByMerchant(merchant: String): List<TransactionResult?> {
         val dbConnection = DataBaseConfig.getConnection()
         val transactionResultList: MutableList<TransactionResult?> = mutableListOf()
 

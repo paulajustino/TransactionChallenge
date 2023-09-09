@@ -1,10 +1,10 @@
-class AccountController {
+class AccountController : AccountControllerInterface {
 
-/*    init {
-        val accounts = createAccounts()
-        for (account in accounts)
-            insertAccount(account)
-    }*/
+    /*    init {
+            val accounts = createAccounts()
+            for (account in accounts)
+                insertAccount(account)
+        }*/
 
     private fun createAccounts(): MutableList<Account> {
         val accounts: MutableList<Account> = mutableListOf()
@@ -17,7 +17,7 @@ class AccountController {
         return accounts
     }
 
-    private fun insertAccount(account: Account) {
+     override fun insertAccount(account: Account) {
         val dbConnection = DataBaseConfig.getConnection()
 
         dbConnection?.let {
@@ -36,7 +36,7 @@ class AccountController {
         }
     }
 
-    fun getAccountById(id: Int): Account? {
+    override fun getAccountById(accountId: Int): Account? {
         val dbConnection = DataBaseConfig.getConnection()
         var account: Account? = null
 
@@ -44,7 +44,7 @@ class AccountController {
             val query = "SELECT * FROM account WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
-            preparedStatement.setInt(1, id)
+            preparedStatement.setInt(1, accountId)
 
             val resultQuery = preparedStatement.executeQuery()
 
@@ -64,15 +64,15 @@ class AccountController {
         return account
     }
 
-    fun updateBalanceAccount(accountId: Int, balance: Double, balanceType: String) {
+    override fun updateBalanceAccount(accountId: Int, balance: Double, balanceType: String) {
         val dbConnection = DataBaseConfig.getConnection()
 
         dbConnection?.let {
             val query = "UPDATE account SET $balanceType = ? WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
-                preparedStatement.setDouble(1, balance)
-                preparedStatement.setInt(2, accountId)
+            preparedStatement.setDouble(1, balance)
+            preparedStatement.setInt(2, accountId)
 
 
             val rowUpdated = preparedStatement.executeUpdate()
