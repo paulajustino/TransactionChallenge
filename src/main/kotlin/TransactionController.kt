@@ -51,8 +51,8 @@ class TransactionController {
     }
 
     private fun calculateIfAccountHasSufficientBalance(transaction: Transaction): Double? {
-        account?.let {
-            return when (transaction.mcc) {
+        return account?.let {
+            when (transaction.mcc) {
                 MerchantCategory.FOOD.name -> {
                     calculateAccountBalance(transaction.amount, account.foodBalance)
                 }
