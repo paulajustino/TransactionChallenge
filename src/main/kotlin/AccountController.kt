@@ -17,10 +17,9 @@ class AccountController : AccountControllerInterface {
         return accounts
     }
 
-     override fun insertAccount(account: Account) {
-        val dbConnection = DataBaseConfig.getConnection()
+    override fun insertAccount(account: Account) {
 
-        dbConnection?.let {
+        DataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "INSERT INTO account (id, foodBalance, mealBalance, cashBalance) VALUES (?, ?, ?, ?)"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -30,17 +29,13 @@ class AccountController : AccountControllerInterface {
             preparedStatement.setDouble(4, account.cashBalance)
 
             preparedStatement.executeUpdate()
-
-            preparedStatement.close()
-            dbConnection.close()
         }
     }
 
     override fun getAccountById(accountId: Int): Account? {
-        val dbConnection = DataBaseConfig.getConnection()
         var account: Account? = null
 
-        dbConnection?.let {
+        DataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "SELECT * FROM account WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
@@ -56,28 +51,21 @@ class AccountController : AccountControllerInterface {
                     cashBalance = resultQuery.getDouble("cashBalance"),
                 )
             }
-
-            resultQuery.close()
-            preparedStatement.close()
-            dbConnection.close()
         }
+
         return account
     }
 
     override fun updateBalanceAccount(accountId: Int, balance: Double, balanceType: String) {
-        val dbConnection = DataBaseConfig.getConnection()
 
-        dbConnection?.let {
+        DataBaseConfig.getConnection()?.use { dbConnection ->
             val query = "UPDATE account SET $balanceType = ? WHERE id = ?"
 
             val preparedStatement = dbConnection.prepareStatement(query)
             preparedStatement.setDouble(1, balance)
             preparedStatement.setInt(2, accountId)
-
-
+            
             val rowUpdated = preparedStatement.executeUpdate()
-
-            dbConnection.close()
 
             val account = getAccountById(accountId)
             if (rowUpdated > 0) {

@@ -1,5 +1,6 @@
 class TransactionResultController : TransactionResultControllerInterface {
 
+    // insere um resultado de transação
     override fun insertTransactionResult(transactionResult: TransactionResult) {
         DataBaseConfig.getConnection()?.use { dbConnection ->
             val query =
