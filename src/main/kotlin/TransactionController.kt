@@ -1,69 +1,86 @@
 class TransactionController {
 
-    private val account: Account? = null
-    private lateinit var transactionResult: TransactionResult
+    private lateinit var transactions: MutableList<Transaction>
 
-    // funcao que processa a transacao
-    fun processTransaction(transaction: Transaction): TransactionResult {
-
-        // busca dados da conta
-
-        // verifica status da transacao
-        return checkTransactionRequirements(transaction = transaction)
+    init {
+        createTransactions()
+        for (transaction in transactions)
+            processTransaction(transaction)
     }
-    // funcao que atualiza saldo da conta se transacao for aprovada e
-    // cria o resultado da transacao
 
-    private fun checkTransactionRequirements(transaction: Transaction): TransactionResult {
-        // cenário: account id inválido
-        if (account == null) {
-            // cria transacao no banco com essas informaçoes
-            return TransactionResult(
-                id = transaction.id,
-                accountId = transaction.accountId,
-                status = TransactionStatus.DENIED.name,
-                message = TransactionStatusMessage.INVALID_ACCOUNT_ID_MESSAGE.statusMessage,
+    private fun createTransactions(): MutableList<Transaction> {
+        transactions = mutableListOf()
+
+        transactions.add(
+            Transaction(
+                id = 1,
+                accountId = 1,
+                amount = 20.0,
+                merchant = "Restaurante Tavares",
+                mcc = "5811"
             )
-        }
+        )
 
-        account.let {
-            if (calculateIfAccountHasSufficientBalance(transaction = transaction) == null) {
-                // cria transacao no banco com essas informaçoes
-                return TransactionResult(
-                    id = transaction.id,
-                    accountId = transaction.accountId,
-                    status = TransactionStatus.DENIED.name,
-                    message = TransactionStatusMessage.INSUFFICIENT_BALANCE_MESSAGE.statusMessage,
-                )
-            } else {
-                // atualiza saldo da conta
-
-                // cria transacao no banco com essas informaçoes
-                return TransactionResult(
-                    id = transaction.id,
-                    accountId = transaction.accountId,
-                    status = TransactionStatus.APPROVED.name,
-                    message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage,
-                )
-            }
-        }
-
+        return transactions
     }
 
-    private fun calculateIfAccountHasSufficientBalance(transaction: Transaction): Double? {
-        return account?.let {
-            when (transaction.mcc) {
-                MerchantCategory.FOOD.name -> {
-                    calculateAccountBalance(transaction.amount, account.foodBalance)
+    // processa uma transação
+    private fun processTransaction(transaction: Transaction) {
+        val transactionResult: TransactionResult
+
+        with(transaction) {
+            // busca conta relacionada a transação
+            val account = AccountController().getAccountById(id = accountId)
+
+            // verifica se conta existe
+            if (account != null) {
+
+                // verifica se saldo da conta é suficiente para fazer a transação
+                val updatedBalance = calculateIfAccountHasSufficientBalance(transaction = this, account = account)
+                if (updatedBalance != null) {
+
+                    // atualiza saldo da conta
+                    val balanceType = checkBalanceTypeUsedInTransaction(transactionMcc = mcc)
+                    AccountController().updateBalanceAccount(balance = updatedBalance, balanceType = balanceType)
+
+                    // registra resultado da transação no banco
+                    transactionResult = TransactionResult(
+                        id = id,
+                        accountId = accountId,
+                        status = TransactionStatus.APPROVED.name,
+                        message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage,
+                    )
+
+                    TransactionResultController().insertTransactionResult(transactionResult)
+                } else {
+                    transactionResult = TransactionResult(
+                        id = id,
+                        accountId = accountId,
+                        status = TransactionStatus.DENIED.name,
+                        message = TransactionStatusMessage.INSUFFICIENT_BALANCE_MESSAGE.statusMessage,
+                    )
+
+                    TransactionResultController().insertTransactionResult(transactionResult)
                 }
-                MerchantCategory.MEAL.name -> {
-                    calculateAccountBalance(transaction.amount, account.mealBalance)
-                }
-                MerchantCategory.CASH.name -> {
-                    calculateAccountBalance(transaction.amount, account.cashBalance)
-                }
-                else -> throw IllegalStateException()
+
+            } else {
+                transactionResult = TransactionResult(
+                    id = id,
+                    accountId = accountId,
+                    status = TransactionStatus.DENIED.name,
+                    message = TransactionStatusMessage.INVALID_ACCOUNT_ID_MESSAGE.statusMessage,
+                )
+
+                TransactionResultController().insertTransactionResult(transactionResult)
             }
+        }
+    }
+
+    private fun calculateIfAccountHasSufficientBalance(transaction: Transaction, account: Account): Double? {
+        return when (transaction.mcc) {
+            "5411", "5412" -> calculateAccountBalance(transaction.amount, account.foodBalance)
+            "5811", "5812" -> calculateAccountBalance(transaction.amount, account.mealBalance)
+            else -> calculateAccountBalance(transaction.amount, account.cashBalance)
         }
     }
 
@@ -77,17 +94,11 @@ class TransactionController {
         }
     }
 
-    private fun createTransactionResult(
-        transactionId: String,
-        accountId: String,
-        status: String,
-        statusMessage: String
-    ): TransactionResult {
-        return TransactionResult(
-            id = transactionId,
-            accountId = accountId,
-            status = status,
-            message = statusMessage,
-        )
+    private fun checkBalanceTypeUsedInTransaction(transactionMcc: String): String {
+        return when (transactionMcc) {
+            "5411", "5412" -> "foodBalance"
+            "5811", "5812" -> "mealBalance"
+            else -> "cashBalance"
+        }
     }
 }
