@@ -1,5 +1,5 @@
 class TransactionResultController(
-    private val dataBaseConfig: DataBaseConfigInterface,
+    val dataBaseConfig: DataBaseConfigInterface,
 ) : TransactionResultControllerInterface {
 
     // insere um resultado de transação

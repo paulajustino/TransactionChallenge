@@ -59,7 +59,6 @@ class AccountController(
 
             val preparedStatement = dbConnection.prepareStatement(query)
             preparedStatement.setDouble(1, balance)
-            preparedStatement.setInt(2, accountId)
 
             val rowUpdated = preparedStatement.executeUpdate()
 

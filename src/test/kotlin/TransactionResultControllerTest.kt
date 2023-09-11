@@ -1,114 +1,149 @@
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import java.sql.Connection
-import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import kotlin.test.Test
 
-const val URL_DB = "jdbc:mysql://localhost:3306/db_transaction_challenge"
-const val USER_DB = "root"
-const val PASSWORD_DB = "889d9f04b4b69d8a112f4f377ccacca535c8ef16a20a4f1ab61070f37b8d5ac1"
-
 class TransactionResultControllerTest {
 
     @Mock
-    lateinit var mockConnection: Connection
+    val mockConnection: Connection = mock(Connection::class.java)
 
     @Mock
-    lateinit var mockPreparedStatement: PreparedStatement
+    val mockPreparedStatement: PreparedStatement = mock(PreparedStatement::class.java)
 
     @Mock
-    lateinit var mockResultSet: ResultSet
+    val mockResultSet: ResultSet = mock(ResultSet::class.java)
 
     @Mock
-    lateinit var mockDataBaseConfig: DataBaseConfigInterface
+    val mockDataBaseConfig: DataBaseConfigInterface = mock(DataBaseConfigInterface::class.java)
 
-    private lateinit var controller: TransactionResultController
+    private lateinit var transactionResultController: TransactionResultController
 
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        controller = TransactionResultController()
+        transactionResultController = TransactionResultController(mockDataBaseConfig)
 
-        // configuração dos mocks
-        `when`(mockConnectionProvider.getConnection()).thenReturn(mockConnection)
-        `when`(mockConnection.prepareStatement("INSERT INTO transaction_result...")).thenReturn(mockPreparedStatement)
-        `when`(mockConnection.prepareStatement("SELECT * FROM transaction_result WHERE accountId = ?")).thenReturn(
-            mockPreparedStatement
-        )
-        `when`(mockConnection.prepareStatement("SELECT * FROM transaction_result WHERE merchant = ?")).thenReturn(
-            mockPreparedStatement
-        )
-        `when`(mockPreparedStatement.executeUpdate()).thenReturn(1)
-
-        `when`(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet)
-        `when`(mockResultSet.next()).thenReturn(true, false)
-        `when`(mockResultSet.getInt("id")).thenReturn(1)
-        `when`(mockResultSet.getInt("accountId")).thenReturn(1)
-        `when`(mockResultSet.getDouble("amount")).thenReturn(20.0)
-        `when`(mockResultSet.getString("merchant")).thenReturn("Restaurante Tavares")
-        `when`(mockResultSet.getString("mcc")).thenReturn("5811")
-        `when`(mockResultSet.getString("status")).thenReturn("APPROVED")
-        `when`(mockResultSet.getString("message")).thenReturn("Approved Message")
+        // configuração do mock de conexao com o banco
+        `when`(mockDataBaseConfig.getConnection()).thenReturn(mockConnection)
     }
 
+
     @Test
-    fun testInsertTransactionResult() {
+    fun insertTransactionResultTest() {
         val transactionResult = TransactionResult(
             id = 1,
             accountId = 1,
             amount = 20.0,
             merchant = "Restaurante Tavares",
             mcc = "5811",
-            status = "APPROVED",
-            message = "Approved Message"
+            status = TransactionStatus.APPROVED.status,
+            message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage
         )
 
-        controller.insertTransactionResult(transactionResult)
+        configurePrepareStatementMock()
+        configurePreparedStatementMock(transactionResult)
 
-        // Verificação de que o PreparedStatement foi chamado com os parâmetros corretos
-        // (Você pode adicionar mais verificações conforme necessário)
-        verify(mockPreparedStatement).setInt(1, 1)
-        verify(mockPreparedStatement).setInt(2, 1)
-        verify(mockPreparedStatement).setDouble(3, 20.0)
-        verify(mockPreparedStatement).setString(4, "Restaurante Tavares")
-        verify(mockPreparedStatement).setString(5, "5811")
-        verify(mockPreparedStatement).setString(6, "APPROVED")
-        verify(mockPreparedStatement).setString(7, "Approved Message")
+        transactionResultController.insertTransactionResult(transactionResult)
+
+        // verifica se o preparedStatement fez os chamados como o esperado
+        verify(mockPreparedStatement).setInt(1, transactionResult.id)
+        verify(mockPreparedStatement).setInt(2, transactionResult.accountId)
+        verify(mockPreparedStatement).setDouble(3, transactionResult.amount)
+        verify(mockPreparedStatement).setString(4, transactionResult.merchant)
+        verify(mockPreparedStatement).setString(5, transactionResult.mcc)
+        verify(mockPreparedStatement).setString(6, transactionResult.status)
+        verify(mockPreparedStatement).setString(7, transactionResult.message)
+        verify(mockPreparedStatement).executeUpdate()
     }
 
     @Test
-    fun testGetTransactionResultByAccountId() {
-        val transactionResults = controller.getTransactionResultByAccountId(1)
+    fun getTransactionResultByAccountIdTest() {
+        val transactionResult = TransactionResult(
+            id = 1,
+            accountId = 1,
+            amount = 20.0,
+            merchant = "Restaurante Tavares",
+            mcc = "5811",
+            status = TransactionStatus.APPROVED.status,
+            message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage
+        )
 
-        // Verificação de que o ResultSet foi processado corretamente
+        configurePrepareStatementMock()
+        configureResultSetMock(transactionResult)
+        `when`(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet)
+
+        val transactionResults = transactionResultController.getTransactionResultByAccountId(1)
+
+        // verifica se o resultado é o esperado
         assertEquals(1, transactionResults.size)
-        assertEquals(1, transactionResults[0]?.id)
-        assertEquals(1, transactionResults[0]?.accountId)
-        assertEquals(20.0, transactionResults[0]?.amount)
-        assertEquals("Restaurante Tavares", transactionResults[0]?.merchant)
-        assertEquals("5811", transactionResults[0]?.mcc)
-        assertEquals("APPROVED", transactionResults[0]?.status)
-        assertEquals("Approved Message", transactionResults[0]?.message)
+        assertEquals(transactionResult.id, transactionResults[0]?.id)
+        assertEquals(transactionResult.accountId, transactionResults[0]?.accountId)
+        assertEquals(transactionResult.amount, transactionResults[0]?.amount)
+        assertEquals(transactionResult.merchant, transactionResults[0]?.merchant)
+        assertEquals(transactionResult.mcc, transactionResults[0]?.mcc)
+        assertEquals(transactionResult.status, transactionResults[0]?.status)
+        assertEquals(transactionResult.message, transactionResults[0]?.message)
     }
 
     @Test
-    fun testGetTransactionResultByMerchant() {
-        val transactionResults = controller.getTransactionResultByMerchant("Restaurante Tavares")
+    fun getTransactionResultByMerchantTest() {
+        val transactionResult = TransactionResult(
+            id = 1,
+            accountId = 1,
+            amount = 20.0,
+            merchant = "Restaurante Tavares",
+            mcc = "5811",
+            status = TransactionStatus.APPROVED.status,
+            message = TransactionStatusMessage.APPROVED_MESSAGE.statusMessage
+        )
 
-        // Verificação de que o ResultSet foi processado corretamente
+        configurePrepareStatementMock()
+        configureResultSetMock(transactionResult)
+        `when`(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet)
+
+        val transactionResults = transactionResultController.getTransactionResultByMerchant("Restaurante Tavares")
+
+        // verifica se o resultSet foi processado com os valores esperados
         assertEquals(1, transactionResults.size)
-        assertEquals(1, transactionResults[0]?.id)
-        assertEquals(1, transactionResults[0]?.accountId)
-        assertEquals(20.0, transactionResults[0]?.amount)
-        assertEquals("Restaurante Tavares", transactionResults[0]?.merchant)
-        assertEquals("5811", transactionResults[0]?.mcc)
-        assertEquals("APPROVED", transactionResults[0]?.status)
-        assertEquals("Approved Message", transactionResults[0]?.message)
+        assertEquals(transactionResult.id, transactionResults[0]?.id)
+        assertEquals(transactionResult.accountId, transactionResults[0]?.accountId)
+        assertEquals(transactionResult.amount, transactionResults[0]?.amount)
+        assertEquals(transactionResult.merchant, transactionResults[0]?.merchant)
+        assertEquals(transactionResult.mcc, transactionResults[0]?.mcc)
+        assertEquals(transactionResult.status, transactionResults[0]?.status)
+        assertEquals(transactionResult.message, transactionResults[0]?.message)
+    }
+
+    private fun configureResultSetMock(transactionResult: TransactionResult) {
+        `when`(mockResultSet.next()).thenReturn(true, false) // retorna apenas um valor
+        `when`(mockResultSet.getInt("id")).thenReturn(transactionResult.id)
+        `when`(mockResultSet.getInt("accountId")).thenReturn(transactionResult.accountId)
+        `when`(mockResultSet.getDouble("amount")).thenReturn(transactionResult.amount)
+        `when`(mockResultSet.getString("merchant")).thenReturn(transactionResult.merchant)
+        `when`(mockResultSet.getString("mcc")).thenReturn(transactionResult.mcc)
+        `when`(mockResultSet.getString("status")).thenReturn(transactionResult.status)
+        `when`(mockResultSet.getString("message")).thenReturn(transactionResult.message)
+    }
+
+    private fun configurePrepareStatementMock() {
+        `when`(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement)
+    }
+
+    private fun configurePreparedStatementMock(transactionResult: TransactionResult) {
+        doNothing().`when`(mockPreparedStatement).setInt(1, transactionResult.id)
+        doNothing().`when`(mockPreparedStatement).setInt(2, transactionResult.accountId)
+        doNothing().`when`(mockPreparedStatement).setDouble(3, transactionResult.amount)
+        doNothing().`when`(mockPreparedStatement).setString(4, transactionResult.merchant)
+        doNothing().`when`(mockPreparedStatement).setString(5, transactionResult.mcc)
+        doNothing().`when`(mockPreparedStatement).setString(6, transactionResult.status)
+        doNothing().`when`(mockPreparedStatement).setString(7, transactionResult.message)
+
+        `when`(mockPreparedStatement.executeUpdate()).thenReturn(1)
     }
 }
