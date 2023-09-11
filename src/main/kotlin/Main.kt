@@ -1,27 +1,24 @@
 fun main() {
 
-    val transactions: MutableList<Transaction> = mutableListOf()
+    // configuraçao de contas testes
+    val accountController = AccountController(DataBaseConfig())
+    val accounts = accountController.createAccounts()
+    for (account in accounts)
+        accountController.insertAccount(account)
 
-    transactions.add(
-        Transaction(
-            id = 1,
-            accountId = 1,
-            amount = 20.0,
-            merchant = "Restaurante Tavares",
-            mcc = "5811"
-        )
-    )
-
-    val accountController = AccountController()
-    val transactionResultController = TransactionResultController()
+    // configuração de transações testes
+    val transactionResultController = TransactionResultController(DataBaseConfig())
     val transactionController = TransactionController(accountController, transactionResultController)
-    transactionController.processTransaction(transactions[0])
+    val transactions = transactionController.createTransactions()
 
-    println("Finish")
-
-    val results = TransactionResultController().getTransactionResultByAccountId(1)
-    for (result in results)
-        println(result)
+    // imprime resultados
+    for (transaction in transactions) {
+        transactionController.processTransaction(transaction)
+        val transactionResult = transactionResultController.getTransactionResultById(transaction.id)
+        val account = accountController.getAccountById(transaction.accountId)
+        println(transactionResult)
+        println(account)
+    }
 }
 
 

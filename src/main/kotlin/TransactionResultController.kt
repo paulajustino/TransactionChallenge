@@ -83,4 +83,32 @@ class TransactionResultController(
 
         return transactionResultList
     }
+
+    // busca de resultados de transações por id
+    override fun getTransactionResultById(id: Int): TransactionResult? {
+        var transactionResult: TransactionResult? = null
+
+        // metodo 'use' garante que todas as conexoes e recursos sejam fechados ao final da execução
+        dataBaseConfig.getConnection()?.use { dbConnection ->
+            val query = "SELECT * FROM transaction_result WHERE id = ?"
+
+            val preparedStatement = dbConnection.prepareStatement(query)
+            preparedStatement.setInt(1, id)
+
+            val resultQuery = preparedStatement.executeQuery()
+
+            if (resultQuery.next()) {
+                transactionResult = TransactionResult(
+                    id = resultQuery.getInt("id"),
+                    accountId = resultQuery.getInt("accountId"),
+                    amount = resultQuery.getDouble("amount"),
+                    merchant = resultQuery.getString("merchant"),
+                    mcc = resultQuery.getString("mcc"),
+                    status = resultQuery.getString("status"),
+                    message = resultQuery.getString("message"),
+                )
+            }
+        }
+        return transactionResult
+    }
 }

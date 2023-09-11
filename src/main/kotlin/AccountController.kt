@@ -2,10 +2,10 @@ class AccountController(
     private val dataBaseConfig: DataBaseConfigInterface,
 ) : AccountControllerInterface {
 
-    private fun createAccounts(): MutableList<Account> {
+    fun createAccounts(): MutableList<Account> {
         val accounts: MutableList<Account> = mutableListOf()
 
-        accounts.add(Account(id = 1, foodBalance = 0.0, mealBalance = 25.0, cashBalance = 50.0))
+        accounts.add(Account(id = 1, foodBalance = 25.0, mealBalance = 25.0, cashBalance = 50.0))
         accounts.add(Account(id = 2, foodBalance = 25.0, mealBalance = 50.0, cashBalance = 100.0))
         accounts.add(Account(id = 3, foodBalance = 50.0, mealBalance = 75.0, cashBalance = 150.0))
         accounts.add(Account(id = 4, foodBalance = 100.0, mealBalance = 100.0, cashBalance = 50.0))
@@ -59,17 +59,11 @@ class AccountController(
 
             val preparedStatement = dbConnection.prepareStatement(query)
             preparedStatement.setDouble(1, balance)
+            preparedStatement.setInt(2, accountId)
 
-            val rowUpdated = preparedStatement.executeUpdate()
+            preparedStatement.executeUpdate()
 
-            val account = getAccountById(accountId)
-            if (rowUpdated > 0) {
-                println("Saldo em conta atualizado com sucesso.")
-                println(account)
-            } else {
-                println("Erro: Saldo em conta não atualizado.")
-                println(account)
-            }
+            println("Saldo em conta atualizado com sucesso.")
         }
     }
 }

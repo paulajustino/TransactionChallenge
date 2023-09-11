@@ -33,6 +33,7 @@ class TransactionController(
                     message = TransactionStatusMessage.INSUFFICIENT_BALANCE_MESSAGE
                 )
                 transactionResultController.insertTransactionResult(transactionResult)
+                println("Erro: Saldo em conta não atualizado.")
                 return
             }
 
@@ -94,5 +95,67 @@ class TransactionController(
             status = status.status,
             message = message.statusMessage
         )
+    }
+
+    fun createTransactions(): MutableList<Transaction> {
+        val transactions: MutableList<Transaction> = mutableListOf()
+
+        transactions.add(
+            Transaction(
+                id = 1,
+                accountId = 1,
+                amount = 25.0,
+                merchant = "Restaurante Tavares",
+                mcc = "5411"
+            )
+        )
+        transactions.add(
+            Transaction(
+                id = 2,
+                accountId = 1,
+                amount = 25.0,
+                merchant = "Açai da Bene",
+                mcc = "5811"
+            )
+        )
+        transactions.add(
+            Transaction(
+                id = 3,
+                accountId = 2,
+                amount = 150.0,
+                merchant = "Mercado Vitoria",
+                mcc = "5211"
+            )
+        )
+        transactions.add(
+            Transaction(
+                id = 4,
+                accountId = 3,
+                amount = 75.0,
+                merchant = "Loja Luz",
+                mcc = "5211"
+            )
+        )
+
+        transactions.add(
+            Transaction(
+                id = 5,
+                accountId = 4,
+                amount = 75.0,
+                merchant = "Sobrapar",
+                mcc = "5411"
+            )
+        )
+        transactions.add(
+            Transaction(
+                id = 6,
+                accountId = 4,
+                amount = 100.0,
+                merchant = "Sobrapar",
+                mcc = "5211"
+            )
+        )
+
+        return transactions
     }
 }
